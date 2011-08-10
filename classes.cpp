@@ -1,7 +1,7 @@
 #include "readLengths.h"
 
 class Chromosome {
-    std::string name;
+        std::string name;
 	std::string sequence;
 public:
 	Chromosome(string n, string s);
@@ -25,10 +25,10 @@ class Reads {
 	vector<string> chrom2;
 	vector<string> pos1;
 	vector<string> pos2;
+        vector<bool> strand1;
 public:
 	Reads(int l1, int l2, int insM, int insSD) { readLength1 = l1; readLength2 = l2; insertSizeMean = insM; insertSizeSD = insSD;};
-	void addReads(string, string, string, string, string, string);
-//         void generateQualities(std::string qualsFile, int end);
+	void addReads(string, string, string, string, string, string, int);
         void generateQualities(std::string qualsFile1, std::string qualsFile2, int seed);
         void generateQualities(std::string qualsFile1, std::string qualsFile2, int seed, int readLength1, int readLength2);
         void applyQualities(int seed, int qualityAdjust, double snpProb);
@@ -63,97 +63,16 @@ Chromosome::Chromosome(string n, string s) {
 
 /** ******************************************* **/
 
-void Reads::addReads(string read1, string read2, string chr1, string chr2, string p1, string p2) {
+void Reads::addReads(string read1, string read2, string chr1, string chr2, string p1, string p2, int firstReadStrand) {
+        
 	end1.push_back(read1);
-	end2.push_back(reverseComplement(read2));
+	end2.push_back(read2);
 	chrom1.push_back(chr1);
 	chrom2.push_back(chr2);
 	pos1.push_back(p1);
 	pos2.push_back(p2);
+        strand1.push_back((bool) firstReadStrand);
 }
-
-// void Reads::generateQualities(std::string tmpQuals, int end) {
-//     
-//     int nlines, pos, i;
-//     std::string buff; 
-//     
-//     std::cout << "Generating Qualities using: " << tmpQuals << std::endl;
-//     
-//     std::ifstream qualsf(tmpQuals.c_str());
-//     if (!qualsf.is_open())
-//     {
-//         printf("error reading temporary qualities file\n");
-//         exit (EXIT_FAILURE); // error 
-//     }
-//     /* find the number of lines */
-//     qualsf.seekg(0, std::ios::end);
-//     
-//     if(end == 1) {
-//         nlines = (int) (qualsf.tellg() / (readLength1 + 1));
-//         std::cout << "End1: " << nlines << std::endl;
-//         for(i = 0; i < end1.size(); i++) {   
-//             pos = (readLength1 + 1) * (rand() % nlines);
-//             qualsf.seekg(pos, std::ios::beg);
-//             getline(qualsf,buff);
-//             quals1.push_back(buff);
-//         }
-//     }
-//     else if(end == 2) {       
-//         nlines = (int) (qualsf.tellg() / (readLength2 + 1));
-//         std::cout << "End2: " << nlines << std::endl;
-//         for(i = 0; i < end2.size(); i++) {
-//             std::cout << i << std::endl;
-//             pos = (readLength2 + 1) * (rand() % nlines);
-//             qualsf.seekg(pos, std::ios::beg);
-//             getline(qualsf,buff);       
-//             quals2.push_back(buff);        
-//         }
-//     }
-//     else {
-//         std::cerr << "Error" << std::endl;
-//         qualsf.close();
-//         exit(EXIT_FAILURE);
-//     }
-//     qualsf.close();
-// }
-
-// void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int seed) {
-//     
-//     int nlines, pos, i;
-//     std::string buff; 
-//     
-//     std::cout << "Generating Qualities" << std::endl;
-//     
-//     std::ifstream qualsf1(tmpQuals1.c_str());
-//     std::ifstream qualsf2(tmpQuals2.c_str());
-//     if (!qualsf1.is_open() | !qualsf2.is_open())
-//     {
-//         std::cerr << "error reading temporary qualities file" << std::endl;
-//         exit (EXIT_FAILURE); // error 
-//     }
-//     /* find the number of lines */
-//     qualsf1.seekg(0, std::ios::end);
-//     nlines = (int) (qualsf1.tellg() / (readLength1 + 1));
-//     for(i = 0; i < end1.size(); i++) {   
-//         //pos = (readLength1 + 1) * (rand() % nlines);
-//         pos = (readLength1 + 1) * SampleUniform(0, nlines - 1, seed);
-//         qualsf1.seekg(pos, std::ios::beg);
-//         getline(qualsf1, buff);
-//         quals1.push_back(buff);
-//     }
-//     qualsf1.close();
-//  
-//     qualsf2.seekg(0, std::ios::end);
-//     nlines = (int) (qualsf2.tellg() / (readLength2 + 1));
-//     for(i = 0; i < end2.size(); i++) {
-//         //pos = (readLength2 + 1) * (rand() % nlines);
-//         pos = (readLength1 + 1) * SampleUniform(0, nlines - 1, seed);
-//         qualsf2.seekg(pos, std::ios::beg);
-//         getline(qualsf2, buff);
-//         quals2.push_back(buff);
-//     }
-//     qualsf2.close();
-// }
 
 void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int seed) {
     
@@ -180,11 +99,7 @@ void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int 
     /// now go to the end of the file
     qualsf1.seekg(0, std::ios::end);
     qualsf2.seekg(0, std::ios::end);
-    
-    //cout << (int) (qualsf1.tellg() / (qualsLength1 + 1)) << endl;
-    //cout << (int) (qualsf2.tellg() / (qualsLength2 + 1)) << endl;
-    
-    
+        
     if ( (int) (qualsf1.tellg() / (qualsLength1 + 1)) != (int) (qualsf2.tellg() / (qualsLength2 + 1)) ) {
         cerr << "Number of lines in qualities files do not match" << endl;
         exit(EXIT_FAILURE);
@@ -314,7 +229,14 @@ void Reads::writeFASTQ(string fileName) {
         
         file1.open(name1.c_str());    
         for(i = 0; i < end1.size(); i++) {
-                file1 << "@" << chrom1[i].substr(1) << ":" << pos1[i] << ":" << pos2[i] << "/1" << std::endl;
+                file1 << "@" << chrom1[i].substr(1) << ":" << pos1[i] << ":" << pos2[i] << ":";
+                
+                if(strand1[i])
+                    file1 << "+";
+                else
+                    file1 << "-";
+                
+                file1 << "/1" << std::endl;
                 file1 << end1[i] << std::endl;
                 file1 << "+" << std::endl;
                 file1 << quals1[i] << std::endl;
@@ -323,7 +245,14 @@ void Reads::writeFASTQ(string fileName) {
         
         file2.open(name2.c_str());
         for(i = 0; i < end1.size(); i++) {
-                file2 << "@" << chrom2[i].substr(1) << ":" << pos1[i] << ":" << pos2[i] << "/2" << std::endl;
+                file2 << "@" << chrom2[i].substr(1) << ":" << pos1[i] << ":" << pos2[i] << ":";
+                
+                if(strand1[i])
+                    file2 << "+";
+                else
+                    file2 << "-";
+                
+                file2 << "/2" << std::endl;
                 file2 << end2[i] << std::endl;
                 file2 << "+" << std::endl;
                 file2 << quals2[i] << std::endl;
@@ -410,31 +339,57 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
             for(i = 0; i < numReads; i++) {
                     
                 int insertSize = SampleNormal((double) insertSizeMean, (double) insertSizeSD, seed);
-                    /* NOT IDEAL COME BACK LATER */
-                    //pos = rand() % (chromVec[chrom].length() - (readLength1 + readLength2 + insertSize));
-                    pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
                     
-                    end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
-                    end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
+                    /// choose whether the first read is from the +ve or -ve strand
+                    int firstReadStrand = SampleBernoulli(0.5, seed);
+                    
+                    if(firstReadStrand) { // if 1 first read is on positive strand
+                        pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
+                        end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
+                        end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
+                        end2 = reverseComplement(end2);
+                    }
+                    else { // if 0 first read -ve strand
+                        pos = SampleUniform(readLength2 + insertSize, chromVec[chrom].length() - (readLength1 + 1), seed);
+                        end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
+                        end1 = reverseComplement(end1);
+                        end2 = chromVec[chrom].returnSequence().substr(pos - insertSize - readLength2, readLength2);
+                    }
                     
                     found1 = end1.find("N");
                     found2 = end2.find("N");
                     
                     while(found1 != string::npos || found2 != string::npos) {
                             //pos = rand() % (chromVec[chrom].length()  - (readLength1 + readLength2 + insertSize));
-                            pos = SampleUniform(0,  chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
+                            //pos = SampleUniform(0,  chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
                             
+                            //end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
+                            //end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
+                            
+                        if(firstReadStrand) { // if 1 first read is on positive strand
+                            pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
                             end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
                             end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
-                            
-                            found1 = end1.find("N");
-                            found2 = end2.find("N");
+                            end2 = reverseComplement(end2);
+                        }
+                        else { // if 0 first read -ve strand
+                            pos = SampleUniform(readLength2 + insertSize, chromVec[chrom].length() - (readLength1 + 1), seed);
+                            end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
+                            end1 = reverseComplement(end1);
+                            end2 = chromVec[chrom].returnSequence().substr(pos - insertSize - readLength2, readLength2);
+                        }
+                        
+                        found1 = end1.find("N");
+                        found2 = end2.find("N");
                     }
                     
                     start1 = boost::lexical_cast< string >( pos + 1 );
-                    start2 = boost::lexical_cast< string >( pos + readLength1 + insertSize + 1 );
+                    if(firstReadStrand)
+                        start2 = boost::lexical_cast< string >( pos + readLength1 + insertSize + 1 );
+                    else
+                        start2 = boost::lexical_cast< string >( pos - readLength1 - insertSize + 1 );
                     
-                    reads.addReads(end1, end2, chromVec[chrom].returnName(), chromVec[chrom].returnName(), start1, start2);
+                    reads.addReads(end1, end2, chromVec[chrom].returnName(), chromVec[chrom].returnName(), start1, start2, firstReadStrand);
                     
             }
             
