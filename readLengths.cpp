@@ -176,8 +176,12 @@ int main(int argc, char *argv[]) {
     srand( std::time(0) );
         
     time(&start);
-    std::string tmpQuals1 = createTmpQualitiesFile(temp, qualitiesFile1, readLength1);
-    std::string tmpQuals2 = createTmpQualitiesFile(temp, qualitiesFile2, readLength2);    
+    std::string tmpQuals1 = createTmpQualitiesFile2(temp, qualitiesFile1, readLength1);
+    time(&end);
+    printf("Elapsed time: %.0f seconds\n", difftime(end, start));
+    
+    time(&start);
+    std::string tmpQuals2 = createTmpQualitiesFile2(temp, qualitiesFile2, readLength2);    
     time(&end);
     printf("Elapsed time: %.0f seconds\n", difftime(end, start));
 

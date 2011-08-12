@@ -46,6 +46,7 @@ std::string createTmpQualitiesFile (std::string temp, std::string inFile, int re
     
     bool done = false;
     std::string tmpFile;
+    vector<string> quals;
     
     while(!done) {
         tmpFile = temp + "/" + genRandomString(10) + ".tmp";
@@ -80,6 +81,64 @@ std::string createTmpQualitiesFile (std::string temp, std::string inFile, int re
     }
     f.close();
     outf.close();
+    
+    return(tmpFile);
+}
+
+
+std::string createTmpQualitiesFile2 (std::string temp, std::string inFile, int readLength) {
+    
+    bool done = false;
+    std::string tmpFile;
+    std::vector<std::string> quals;
+    time_t start, end;
+    
+    while(!done) {
+        tmpFile = temp + "/" + genRandomString(10) + ".tmp";
+        done = !FileExists(tmpFile);
+    }
+        
+    std::ifstream f(inFile.c_str());      
+    if (!f.is_open())
+    {
+        std::cerr << "Unable to open qualities file: " << inFile << std::endl;
+        exit (EXIT_FAILURE); // error 
+    }
+
+    std::string buff;
+    std::cout << "Creating temporary qualities file: " << tmpFile << std::endl;
+    int count = 0;
+
+    time(&start);
+    while (!f.eof()) {
+        count++;
+        getline(f,buff);
+        if(count == 16) {
+            quals.push_back( buff.substr((size_t) 0, (size_t) readLength) );
+            count = 0;
+        }
+    }
+    f.close();
+    time(&end);
+    printf("Reading time: %.0f seconds\n", difftime(end, start));
+    
+    
+    
+    std::ofstream outf(tmpFile.c_str());
+    if (!outf.is_open())
+    {
+        std::cerr << "Unable to create temporary file: " << tmpFile << std::endl;
+        exit (EXIT_FAILURE); // error 
+    }
+    
+    
+    time(&start);
+    for(unsigned int i=0; i<quals.size(); i++) {
+        outf << quals[i] << std::endl;
+    }
+    outf.close();
+    time(&end);
+    printf("Writing time: %.0f seconds\n", difftime(end, start));
     
     return(tmpFile);
 }
@@ -165,7 +224,7 @@ long wallTime(timeval start, timeval end) {
     seconds  = end.tv_sec  - start.tv_sec;
     useconds = end.tv_usec - start.tv_usec;
     
-    mtime = ((seconds) * 1 + useconds/1000.0) + 0.5;
+    mtime = (long int) ((seconds) * 1 + useconds/1000.0) + 0.5;
     
     return mtime;
 }

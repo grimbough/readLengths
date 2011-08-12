@@ -76,7 +76,8 @@ void Reads::addReads(string read1, string read2, string chr1, string chr2, strin
 
 void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int seed) {
     
-    int nlines, pos, i;
+    int nlines, pos;
+    unsigned i;
     int qualsLength1, qualsLength2;
     std::string buff; 
     
@@ -136,8 +137,9 @@ void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int 
 void Reads::applyQualities(int seed, int qualityAdjust, double snpProb) {
  
     std::string bases = "ACGT";
-    int i, j, q, baseChoice;
-    double p, roll;
+    unsigned i, j;
+    int q, baseChoice;
+    double p;
     
     cout << "Applying qualities" << endl;
     
@@ -189,7 +191,7 @@ void Reads::applyQualities(int seed, int qualityAdjust, double snpProb) {
 }
 
 void Reads::writeFASTA() {
-	int i;
+	unsigned i;
 	for(i = 0; i < end1.size(); i++) {
 		cout << chrom1[i] << ":" << pos1[i] << "/1\n" << end1[i] << "\n";
 	}
@@ -201,7 +203,7 @@ void Reads::writeFASTA() {
 
 void Reads::writeFASTA(string fileName) {
     
-        int i;
+        unsigned i;
         ofstream file1;
         ofstream file2;
         
@@ -220,7 +222,7 @@ void Reads::writeFASTA(string fileName) {
 
 void Reads::writeFASTQ(string fileName) {
     
-        int i;
+        unsigned i;
         ofstream file1;
         ofstream file2;
         
@@ -283,31 +285,32 @@ void Genome::printChromosomes() {
 double* Genome::chromosomeWeights() {
     
         int i;
-        vector<int> chromLengths;
-        vector<double> tmp;                    
+        vector<double> chromLengths;                 
         double *weights = (double *) calloc(sizeof(double), numChrom); 
 
         /* get all the chromosome lengths */
         for(i = 0; i < numChrom; i++) {
-            chromLengths.push_back(chromVec[i].length());
+            chromLengths.push_back( (double) chromVec[i].length());
         }
         
-      
+        double max = *max_element(chromLengths.begin(), chromLengths.end());
+
         for(i = 0; i < numChrom; i++) {
-            tmp.push_back( (double) chromLengths[i] / (double) *max_element(chromLengths.begin(), chromLengths.end()) );
+            chromLengths[i] /= max ;
         }
         
-        double sum_of_elems;
-        for(std::vector<double>::iterator j=tmp.begin(); j!=tmp.end(); ++j)
-            sum_of_elems += *j;
+        double sum_of_elems = 0;
+        //for(std::vector<double>::iterator j=chromLengths.begin(); j!=chromLengths.end(); ++j)
+        //    sum_of_elems += *j;
+        for(i = 0; i < numChrom; i++) 
+            sum_of_elems += chromLengths[i];
         
         //cout << sum_of_elems << endl;
         
         for(i = 0; i < numChrom; i++) {
-            weights[i] = tmp[i] / sum_of_elems;
-            //cout << weights[i] << endl;
+            weights[i] = chromLengths[i] / sum_of_elems;
+            
         }
-        
         
         return(weights);
 }
@@ -324,14 +327,16 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
         std::cout << "Generating reads" << std::endl;
         
         double *weights = chromosomeWeights();      
+        //double weights[1] = {1.0};
         
         /* get all the chromosome lengths */
         for(i = 0; i < numChrom; i++) {
             chromLengths.push_back(chromVec[i].length());
         }
+        
 		
         for(chrom = 0; chrom < numChrom; chrom++) {
-            
+                       
             int numReads = (int) floor( ( weights[chrom] * totalReads ) + 0.5);
             
             //cout << chrom << "\t" << numReads << endl;
@@ -341,7 +346,7 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
                 int insertSize = SampleNormal((double) insertSizeMean, (double) insertSizeSD, seed);
                     
                     /// choose whether the first read is from the +ve or -ve strand
-                    int firstReadStrand = SampleBernoulli(0.5, seed);
+                    int firstReadStrand = (int) SampleBernoulli(0.5, seed);
                     
                     if(firstReadStrand) { // if 1 first read is on positive strand
                         pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
@@ -387,7 +392,7 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
                     if(firstReadStrand)
                         start2 = boost::lexical_cast< string >( pos + readLength1 + insertSize + 1 );
                     else
-                        start2 = boost::lexical_cast< string >( pos - readLength1 - insertSize + 1 );
+                        start2 = boost::lexical_cast< string >( pos - readLength2 - insertSize + 1 );
                     
                     reads.addReads(end1, end2, chromVec[chrom].returnName(), chromVec[chrom].returnName(), start1, start2, firstReadStrand);
                     
