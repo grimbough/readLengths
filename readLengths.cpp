@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     
     int readLength1, readLength2;
     std::string qualitiesFile1, qualitiesFile2, temp;
-    std::string outFile, inFile;
+    std::string outFile, inFile, qualFile;
     int numberOfReads, insertSizeMean, insertSizeSD;
     int qualityAdjust;
     unsigned seed;
@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
         ("genome", po::value<string>(), "path to reference genome reads will be sampled from")
         ("output", po::value<string>(), "")
         ("temp", po::value<string>(), "")
+        ("qualfile", po::value<string>(), "")
         ("seed", po::value<int>(), "")
         ("solexa", po::value<int>(), "")
         ("snp_prob", po::value<double>(), "")
@@ -97,7 +98,7 @@ int main(int argc, char *argv[]) {
     if (vm.count("mean")) {
         insertSizeMean = vm["mean"].as<int>();
     } else {
-        insertSizeMean = 200;
+        insertSizeMean = 400;
     }
     
     if (vm.count("sd")) {
@@ -152,6 +153,12 @@ int main(int argc, char *argv[]) {
         temp = "/tmp";
     }
     
+    if (vm.count("qualfile")) {
+        qualFile = vm["qualfile"].as<string>();
+    } else {
+        qualFile = "";
+    }
+    
     if (vm.count("seed")) {
         seed = vm["seed"].as<int>();
     } else {
@@ -176,12 +183,12 @@ int main(int argc, char *argv[]) {
     srand( std::time(0) );
         
     time(&start);
-    std::string tmpQuals1 = createTmpQualitiesFile2(temp, qualitiesFile1, readLength1);
+    std::string tmpQuals1 = createTmpQualitiesFile2(temp, qualitiesFile1, readLength1, qualFile);
     time(&end);
     printf("Elapsed time: %.0f seconds\n", difftime(end, start));
     
     time(&start);
-    std::string tmpQuals2 = createTmpQualitiesFile2(temp, qualitiesFile2, readLength2);    
+    std::string tmpQuals2 = createTmpQualitiesFile2(temp, qualitiesFile2, readLength2, qualFile);    
     time(&end);
     printf("Elapsed time: %.0f seconds\n", difftime(end, start));
 

@@ -42,60 +42,72 @@ bool FileExists(string strFilename) {
   return(blnReturn); 
 }
 
-std::string createTmpQualitiesFile (std::string temp, std::string inFile, int readLength) {
-    
-    bool done = false;
-    std::string tmpFile;
-    vector<string> quals;
-    
-    while(!done) {
-        tmpFile = temp + "/" + genRandomString(10) + ".tmp";
-        done = !FileExists(tmpFile);
-    }
-        
-    std::ifstream f(inFile.c_str());      
-    if (!f.is_open())
-    {
-        std::cerr << "Unable to open qualities file: " << inFile << std::endl;
-        exit (EXIT_FAILURE); // error 
-    }
+// std::string createTmpQualitiesFile (std::string temp, std::string inFile, int readLength, std::string qualfile) {
+//     
+//     bool done = false;
+//     std::string tmpFile;
+//     vector<string> quals;
+//     static int fileNum = 1;
+//     
+//     if(qualfile == "") {
+//         while(!done) {
+//             tmpFile = temp + "/" + genRandomString(10) + ".tmp";
+//             done = !FileExists(tmpFile);
+//         }
+//     }
+//     else {
+//         tmpFile = qualfile + boost::lexical_cast<std::string>(fileNum);
+//     }
+//         
+//     std::ifstream f(inFile.c_str());      
+//     if (!f.is_open())
+//     {
+//         std::cerr << "Unable to open qualities file: " << inFile << std::endl;
+//         exit (EXIT_FAILURE); // error 
+//     }
+// 
+//     std::ofstream outf(tmpFile.c_str());
+//     if (!outf.is_open())
+//     {
+//         std::cerr << "Unable to create temporary file: " << tmpFile << std::endl;
+//         exit (EXIT_FAILURE); // error 
+//     }
+//     
+//     std::string buff;
+//     std::cout << "Creating temporary qualities file: " << tmpFile << std::endl;
+//     int count = 0;
+// 
+//     while (!f.eof()) {
+//         count++;
+//         getline(f,buff);
+//         if(count == 16) {
+//             outf << buff.substr((size_t) 0, (size_t) readLength) << std::endl;
+//             count = 0;
+//         }
+//     }
+//     f.close();
+//     outf.close();
+//     
+//     return(tmpFile);
+// }
 
-    std::ofstream outf(tmpFile.c_str());
-    if (!outf.is_open())
-    {
-        std::cerr << "Unable to create temporary file: " << tmpFile << std::endl;
-        exit (EXIT_FAILURE); // error 
-    }
-    
-    std::string buff;
-    std::cout << "Creating temporary qualities file: " << tmpFile << std::endl;
-    int count = 0;
 
-    while (!f.eof()) {
-        count++;
-        getline(f,buff);
-        if(count == 16) {
-            outf << buff.substr((size_t) 0, (size_t) readLength) << std::endl;
-            count = 0;
-        }
-    }
-    f.close();
-    outf.close();
-    
-    return(tmpFile);
-}
-
-
-std::string createTmpQualitiesFile2 (std::string temp, std::string inFile, int readLength) {
+std::string createTmpQualitiesFile2 (std::string temp, std::string inFile, int readLength, std::string qualfile) {
     
     bool done = false;
     std::string tmpFile;
     std::vector<std::string> quals;
     time_t start, end;
+    static int fileNum = 1;
     
-    while(!done) {
-        tmpFile = temp + "/" + genRandomString(10) + ".tmp";
-        done = !FileExists(tmpFile);
+    if(qualfile == "") {
+        while(!done) {
+            tmpFile = temp + "/" + genRandomString(10) + ".tmp";
+            done = !FileExists(tmpFile);
+        }
+    }
+    else {
+        tmpFile = temp + "/" + qualfile + boost::lexical_cast<std::string>(fileNum++) + ".tmp";
     }
         
     std::ifstream f(inFile.c_str());      

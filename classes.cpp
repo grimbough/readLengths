@@ -344,21 +344,22 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
             for(i = 0; i < numReads; i++) {
                     
                 int insertSize = SampleNormal((double) insertSizeMean, (double) insertSizeSD, seed);
+                unsigned int internalSize = insertSize - readLength1 - readLength2;
                     
                     /// choose whether the first read is from the +ve or -ve strand
                     int firstReadStrand = (int) SampleBernoulli(0.5, seed);
                     
                     if(firstReadStrand) { // if 1 first read is on positive strand
-                        pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
+                        pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + internalSize + 1), seed);
                         end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
-                        end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
+                        end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + internalSize, readLength2);
                         end2 = reverseComplement(end2);
                     }
                     else { // if 0 first read -ve strand
-                        pos = SampleUniform(readLength2 + insertSize, chromVec[chrom].length() - (readLength1 + 1), seed);
+                        pos = SampleUniform(readLength2 + internalSize, chromVec[chrom].length() - (readLength1 + 1), seed);
                         end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
                         end1 = reverseComplement(end1);
-                        end2 = chromVec[chrom].returnSequence().substr(pos - insertSize - readLength2, readLength2);
+                        end2 = chromVec[chrom].returnSequence().substr(pos - internalSize - readLength2, readLength2);
                     }
                     
                     found1 = end1.find("N");
@@ -372,16 +373,16 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
                             //end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
                             
                         if(firstReadStrand) { // if 1 first read is on positive strand
-                            pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + insertSize + 1), seed);
+                            pos = SampleUniform(0, chromVec[chrom].length() - (readLength1 + readLength2 + internalSize + 1), seed);
                             end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
-                            end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + insertSize, readLength2);
+                            end2 = chromVec[chrom].returnSequence().substr(pos + readLength1 + internalSize, readLength2);
                             end2 = reverseComplement(end2);
                         }
                         else { // if 0 first read -ve strand
-                            pos = SampleUniform(readLength2 + insertSize, chromVec[chrom].length() - (readLength1 + 1), seed);
+                            pos = SampleUniform(readLength2 + internalSize, chromVec[chrom].length() - (readLength1 + 1), seed);
                             end1 = chromVec[chrom].returnSequence().substr(pos, readLength1);
                             end1 = reverseComplement(end1);
-                            end2 = chromVec[chrom].returnSequence().substr(pos - insertSize - readLength2, readLength2);
+                            end2 = chromVec[chrom].returnSequence().substr(pos - internalSize - readLength2, readLength2);
                         }
                         
                         found1 = end1.find("N");
@@ -390,9 +391,9 @@ Reads Genome::generateReads(int totalReads, int readLength1, int readLength2, in
                     
                     start1 = boost::lexical_cast< string >( pos + 1 );
                     if(firstReadStrand)
-                        start2 = boost::lexical_cast< string >( pos + readLength1 + insertSize + 1 );
+                        start2 = boost::lexical_cast< string >( pos + readLength1 + internalSize + 1 );
                     else
-                        start2 = boost::lexical_cast< string >( pos - readLength2 - insertSize + 1 );
+                        start2 = boost::lexical_cast< string >( pos - readLength2 - internalSize + 1 );
                     
                     reads.addReads(end1, end2, chromVec[chrom].returnName(), chromVec[chrom].returnName(), start1, start2, firstReadStrand);
                     

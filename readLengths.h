@@ -32,5 +32,5 @@ int processLine(string&);
 string reverseComplement(string);
 string interpolateQualities(string, int);
 bool FileExists(string);
-string createTmpQualitiesFile(string, string, int);
+string createTmpQualitiesFile(string, string, int, string);
 long wallTime(timeval, timeval);
