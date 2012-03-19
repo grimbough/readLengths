@@ -30,7 +30,7 @@ string genRandomString(const int);
 string trim(string&, const string&);
 int processLine(string&);
 string reverseComplement(string);
-string interpolateQualities(string, int);
+string interpolateQualities(string, int, int);
 bool FileExists(string);
 string createTmpQualitiesFile(string, string, int, string);
 long wallTime(timeval, timeval);

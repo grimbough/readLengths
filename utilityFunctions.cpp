@@ -201,10 +201,13 @@ std::string reverseComplement(std::string read) {
     return(read);
 }
 
-std::string interpolateQualities(std::string quals, int readLength) {
+std::string interpolateQualities(std::string quals, int desiredReadLength, int otherReadLength) {
     
     int i, n, idx;
-    std::string newQuals(readLength, ' ');
+    std::string newQuals(desiredReadLength, ' ');
+    int readLength = desiredReadLength + otherReadLength;
+    
+    //cout << readLength << endl;
     
     std::vector<int> vals (readLength, -1);
         
@@ -221,7 +224,7 @@ std::string interpolateQualities(std::string quals, int readLength) {
         }
     }    
     
-    for(i = 0; i < readLength; i++) {
+    for(i = 0; i < desiredReadLength; i++) {
         newQuals[i] = (char) vals[i];
     }
     

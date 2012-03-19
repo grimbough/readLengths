@@ -114,17 +114,19 @@ void Reads::generateQualities(std::string tmpQuals1, std::string tmpQuals2, int 
         
         qualsf1.seekg(pos, std::ios::beg);
         getline(qualsf1, buff);
-        if(buff.length() < readLength1) {
-            buff = interpolateQualities(buff, readLength1);
-        }
+        //if(buff.length() < readLength1) {
+            //buff = interpolateQualities(buff, readLength1);
+        //}
+        buff = interpolateQualities(buff, readLength1, readLength2);
         quals1.push_back(buff);
         
         pos = (qualsLength2 + 1) * line;
         qualsf2.seekg(pos, std::ios::beg);
         getline(qualsf2, buff);
-        if(buff.length() < readLength2) {
-            buff = interpolateQualities(buff, readLength2);
-        }
+        //if(buff.length() < readLength2) {
+        //    buff = interpolateQualities(buff, readLength2);
+        //}
+        buff = interpolateQualities(buff, readLength2, readLength1);
         quals2.push_back(buff);
     }
     //cout << "Made it" << endl;
